@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pic Packer</title>
+  <script src="./pako.min.js"></script>
+  <style>
+    @font-face {
+      font-family: "nunito";
+      src: url(./Nunito.ttf);
+    }
+    
+    :root {
+      
+      /*  --safe-area-inset-top: 140px;
+      --safe-area-inset-bottom: 40px;
+      /* test codes */
+      
+      --primary: var(--md-primary, #ACD299);
+      --onPrimary: var(--md-onPrimary, #173807);
+      --primaryContainer: var(--md-primaryContainer, #2F4F22);
+      --onPrimaryContainer: var(--md-onPrimaryContainer, #C7EEB3);
+      --secondary: var(--md-secondary, #BCCBB1);
+      --onSecondary: var(--md-onSecondary, #283421);
+      --secondaryContainer: var(--md-secondaryContainer, #3E4B37);
+      --onSecondaryContainer: var(--md-onSecondaryContainer, #D8E7CC);
+      --tertiary: var(--md-tertiary, #CFCB7E);
+      --onTertiary: var(--md-onTertiary, #333100);
+      --tertiaryContainer: var(--md-tertiaryContainer, #4B4811);
+      --onTertiaryContainer: var(--md-onTertiaryContainer, #F9F4AE);
+      --error: var(--md-error, #F2B8B5);
+      --onError: var(--md-onError, #601410);
+      --errorContainer: var(--md-errorContainer, #8C1D18);
+      --onErrorContainer: var(--md-onErrorContainer, #F9DEDC);
+      --surface: var(--md-surface, #11140F);
+      --onSurface: var(--md-onSurface, #E2E3DA);
+      --surfaceVariant: var(--md-surfaceVariant, #424940);
+      --onSurfaceVariant: var(--md-onSurfaceVariant, #C2C8BC);
+      --surfaceContainerLowest: var(--md-surfaceContainerLowest, #0C0F0A);
+      --surfaceContainerLow: var(--md-surfaceContainerLow, #191D16);
+      --surfaceContainer: var(--md-surfaceContainer, #1D211A);
+      --surfaceContainerHigh: var(--md-surfaceContainerHigh, #272B24);
+      --surfaceContainerHighest: var(--md-surfaceContainerHighest, #32362E);
+      --surfaceDim: var(--md-surfaceDim, #11140F);
+      --surfaceBright: var(--md-surfaceBright, #373B33);
+      --outline: var(--md-outline, #8C9387);
+      --outlineVariant: var(--md-outlineVariant, #424940);
+      color-scheme: dark;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+    
+    html {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      scroll-behavior: smooth;
+      -webkit-user-select: none;
+      user-select: none;
+      scroll-padding-top: env(safe-area-inset-top, 0px);
+    }
+    
+    * {
+      box-sizing: inherit;
+      -webkit-tap-highlight-color: transparent
+    }
+    
+    input[type="range"] {
+      pointer-events: none
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      pointer-events: auto
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+      pointer-events: auto
+    }
+    
+    body {
+      margin: 0;
+      background: var(--surface);
+      color: var(--onSurface);
+      font: 16px/1.45 system-ui, -apple-system, "nunito", Roboto, sans-serif
+    }
+    
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0 0 auto;
+      height: var(--safe-area-inset-top, 0px);
+      background: var(--surface);
+      z-index: 10
+    }
+    
+    header {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: var(--safe-area-inset-top, 0px);
+      height: 168px;
+      z-index: 9;
+      background: var(--surface);
+      border-radius: 0 0 28px 28px;
+      overflow: hidden;
+      
+    }
+    
+    #sp {
+      height: 168px
+    }
+    
+    .hbg {
+      position: absolute;
+      inset: 0;
+      background: var(--surfaceContainerHigh);
+      opacity: 0;
+      box-shadow: 0 2px 12px #0006;
+    }
+    
+    .logo {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 34px;
+      height: 34px;
+      transform-origin: 0 0;
+      will-change: transform
+    }
+    
+    .l1 {
+      fill: var(--primaryContainer)
+    }
+    
+    .l2 {
+      fill: var(--tertiary)
+    }
+    
+    .l3 {
+      fill: var(--onTertiary)
+    }
+    
+    h1 {
+      position: absolute;
+      left: 0;
+      top: 0;
+      margin: 0;
+      font-size: 21px;
+      line-height: 28px;
+      white-space: nowrap;
+      font-weight: 600;
+      letter-spacing: -.3px;
+      color: var(--onSurface);
+      transform-origin: 0 0;
+      will-change: transform
+    }
+    
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 8px 16px calc(120px + env(safe-area-inset-bottom, 0px));
+      min-height: calc(100vh + 140px)
+    }
+    
+    p.sub {
+      color: var(--onSurfaceVariant);
+      margin: 0 4px 16px;
+      text-align: center;
+      font-size: .92rem
+    }
+    
+    .card {
+      background: var(--surfaceContainer);
+      border-radius: 28px;
+      padding: 18px;
+      margin-bottom: 16px
+    }
+    
+    .card.res {
+      background: var(--tertiaryContainer);
+      color: var(--onTertiaryContainer)
+    }
+    
+    .drop {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: var(--primaryContainer);
+      color: var(--onPrimaryContainer);
+      border: 2px dashed var(--primary);
+      border-radius: 24px;
+      padding: 28px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform .15s, background .2s
+    }
+    
+    .drop svg {
+      width: 36px;
+      height: 36px;
+      fill: var(--primary)
+    }
+    
+    .drop.over {
+      background: var(--secondaryContainer);
+      transform: scale(.98)
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 12px
+    }
+    
+    .grid:empty {
+      display: none
+    }
+    
+    .item {
+      background: var(--surfaceContainerHigh);
+      border-radius: 18px;
+      padding: 8px;
+      font-size: .78rem;
+      color: var(--onSurfaceVariant);
+      word-break: break-all
+    }
+    
+    .item img,
+    .item canvas {
+      width: 100%;
+      height: 110px;
+      object-fit: contain;
+      display: block;
+      background: var(--surfaceContainerLowest);
+      border-radius: 12px;
+      margin-bottom: 6px
+    }
+    
+    .item button {
+      width: 100%;
+      padding: 6px;
+      font-size: .8rem;
+      margin-top: 6px
+    }
+    
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      align-items: center
+    }
+    
+    button,
+    select {
+      font: inherit;
+      font-weight: 500;
+      padding: 11px 20px;
+      border-radius: 100px;
+      border: 0;
+      background: var(--secondaryContainer);
+      color: var(--onSecondaryContainer);
+      cursor: pointer;
+      transition: filter .15s, transform .1s
+    }
+    
+    select {
+      padding-right: 14px;
+      background: var(--surfaceContainerHighest);
+      color: var(--onSurface)
+    }
+    
+    button:active {
+      transform: scale(.96);
+      filter: brightness(1.15)
+    }
+    
+    button.pri {
+      background: var(--primary);
+      color: var(--onPrimary)
+    }
+    
+    button:disabled {
+      opacity: .38;
+      cursor: not-allowed
+    }
+    
+    .row button.pri {
+      flex: 1
+    }
+    
+    .ctl {
+      margin-top: 18px;
+      font-size: .92rem;
+      color: var(--onSurfaceVariant)
+    }
+    
+    .ctl b {
+      color: var(--primary);
+      float: right;
+      font-size: 1rem
+    }
+    
+    .ctl small {
+      display: block;
+      margin-top: 6px;
+      color: var(--onSurfaceVariant);
+      opacity: .8
+    }
+    
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 28px;
+      background: transparent;
+      margin: 6px 0 0;
+      --p: 50%
+    }
+    
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 14px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, var(--primary) var(--p), var(--secondaryContainer) var(--p))
+    }
+    
+    input[type=range]::-moz-range-track {
+      height: 14px;
+      border-radius: 8px;
+      background: var(--secondaryContainer)
+    }
+    
+    input[type=range]::-moz-range-progress {
+      height: 14px;
+      border-radius: 8px;
+      background: var(--primary)
+    }
+    
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 6px;
+      height: 34px;
+      margin-top: -10px;
+      border-radius: 4px;
+      background: var(--primary);
+      border: 0;
+      box-shadow: 0 0 0 4px var(--surfaceContainer)
+    }
+    
+    input[type=range]::-moz-range-thumb {
+      width: 6px;
+      height: 34px;
+      border-radius: 4px;
+      background: var(--primary);
+      border: 0
+    }
+    
+    .msg {
+      margin-top: 12px;
+      font-size: .92rem;
+      color: var(--onSurfaceVariant)
+    }
+    
+    .msg:empty {
+      display: none
+    }
+    
+    .msg.err {
+      color: var(--onErrorContainer);
+      background: var(--errorContainer);
+      padding: 10px 14px;
+      border-radius: 16px
+    }
+    
+    .msg.ok {
+      color: var(--onPrimaryContainer);
+      background: var(--primaryContainer);
+      padding: 10px 14px;
+      border-radius: 16px
+    }
+    
+    .card.res .msg.ok {
+      background: var(--surfaceContainerHighest);
+      color: var(--onSurface)
+    }
+    
+    .big {
+      font-size: 1.3rem;
+      font-weight: 600
+    }
+    
+    small {
+      color: inherit;
+      opacity: .8
+    }
+    
+    #prev {
+      max-width: 100%;
+      margin-top: 14px;
+      border-radius: 16px
+    }
+    
+    [hidden] {
+      display: none !important
+    }
+    
+    nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px 16px calc(12px + var(--safe-area-inset-bottom, 0px));
+      background: var(--surfaceContainer);
+      border-radius: 28px 28px 0 0
+    }
+    
+    nav button {
+      flex: 1;
+      max-width: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      background: transparent;
+      color: var(--onSurfaceVariant);
+      font-size: .78rem;
+      padding: 4px 0
+    }
+    
+    nav button span {
+      display: grid;
+      place-items: center;
+      width: 64px;
+      height: 32px;
+      border-radius: 16px;
+      transition: background .25s
+    }
+    
+    nav svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor
+    }
+    
+    nav button.on {
+      background: transparent;
+      color: var(--onSurface)
+    }
+    
+    nav button.on span {
+      background: var(--secondaryContainer);
+      color: var(--onSecondaryContainer)
+    }
+  </style>
+</head>
+
+<body>
+  <header id="hd">
+    <div class="hbg" id="hbg"></div>
+    <svg class="logo" id="lg" viewBox="0 0 48 48" aria-hidden="true">
+      <rect class="l1" x="3" y="3" width="30" height="30" rx="9" />
+      <rect class="l2" x="15" y="15" width="30" height="30" rx="9" />
+      <path class="l3" d="M20 38l6-8 4 5 3-3 5 6z" />
+      <circle class="l3" cx="35" cy="24" r="2.5" />
+    </svg>
+    <h1 id="ttl">Pic Packer</h1>
+  </header>
+  <div id="sp"></div>
+  
+  <main>
+    <p class="sub">One full base image, plus only the small tiles that differ in the other outfits.</p>
+    
+    <section id="packView">
+      <div class="card">
+        <label class="drop" id="dropP">
+          <svg viewBox="0 0 24 24">
+            <path
+                                                                                                                                    d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z" />
+          </svg>
+          <b>Add 2+ images</b><small>Tap or drop here</small>
+          <input id="fileP" type="file" accept="image/*" multiple hidden>
+        </label>
+        <div class="grid" id="listP"></div>
+        <div class="ctl">Quality <b id="qv">85</b><input id="q" type="range" min="40" max="100" value="85"></div>
+        <div class="ctl">Match tolerance <b id="tv">7</b><input id="t" type="range" min="0" max="40" value="7">
+          <small>A 16×16 tile is skipped when every pixel is within this colour distance of the base. Higher means
+            smaller file, slightly less exact.</small>
+        </div>
+        <div class="row"><button id="btnClear" disabled>Clear</button><button class="pri" id="btnPack"
+                                                                                                                                  disabled>Pack</button>
+        </div>
+        <div class="msg" id="msgP"></div>
+      </div>
+      <div class="card res" id="outP" hidden>
+        <div class="big" id="sizes"></div>
+        <div class="msg" id="stats"></div>
+        <div class="row"><button class="pri" id="btnDl">Download atlas.jpg</button></div>
+        <canvas id="prev"></canvas>
+        <p><small>Top: the base image. Below it: only the tiles that changed. The layout data is appended inside the
+            file, so do not re-save, resize, or send it through apps that recompress images.</small></p>
+      </div>
+    </section>
+    
+    <section id="unpackView" hidden>
+      <div class="card">
+        <label class="drop" id="dropU">
+          <svg viewBox="0 0 24 24">
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+          </svg>
+          <b>Open an atlas.jpg</b><small>Tap or drop here</small>
+          <input id="fileU" type="file" accept="image/jpeg" hidden>
+        </label>
+        <div class="row"><small>Save as</small><select id="fmt">
+            <option value="jpg">JPG (small)</option>
+            <option value="png">PNG (bigger)</option>
+          </select></div>
+        <div class="msg" id="msgU"></div>
+        <div class="grid" id="listU"></div>
+        <div class="row"><button class="pri" id="btnAll" hidden>Download all</button></div>
+      </div>
+    </section>
+  </main>
+  
+  <nav>
+    <button id="tabP" class="on"><span><svg viewBox="0 0 24 24">
+          <path
+                                                                                                                                  d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-2 6h-2v2h-2v-2h-2v-2h2V8h2v2h2z" />
+        </svg></span>Pack</button>
+    <button id="tabU"><span><svg viewBox="0 0 24 24">
+          <path
+                                                                                                                                  d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 10v-3H9v-2h5V8l4 4z" />
+        </svg></span>Unpack</button>
+  </nav>
+  
+  <script>
+    (function(){
+const $=id=>document.getElementById(id);
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const kb=n=>n>=1048576?(n/1048576).toFixed(2)+' MB':(n/1024).toFixed(0)+' KB';
+function fill(r){const p=(r.value-r.min)/(r.max-r.min)*100;r.style.setProperty('--p',p+'%')}
+['q','t'].forEach(id=>{const r=$(id);fill(r);r.oninput=()=>{$(id==='q'?'qv':'tv').textContent=r.value;fill(r)}});
+const hd=$('hd'),lg=$('lg'),ttl=$('ttl'),hbg=$('hbg');
+const lerp=(a,b,p)=>a+(b-a)*p;
+let tick=0;
+function head(){tick=0;
+  const p=Math.min(1,Math.max(0,scrollY/90)),W=innerWidth,w=ttl.offsetWidth,S=32/21,H0=168,H1=64;
+  const grp=34+10+w,ll=(W-grp)/2,tl=ll+44;
+  hd.style.height=lerp(H0,H1,p)+'px';
+  hbg.style.opacity=p;
+  const ls=lerp(84/34,1,p);
+  lg.style.transform='translate('+lerp(W/2-42,ll,p)+'px,'+lerp(24,15,p)+'px) scale('+ls+')';
+  ttl.style.transform='translate('+lerp(W/2-w*S/2,tl,p)+'px,'+lerp(116,18,p)+'px) scale('+lerp(S,1,p)+')';
+}
+const rq=()=>{if(!tick)tick=requestAnimationFrame(head)};
+addEventListener('scroll',rq,{passive:true});addEventListener('resize',rq);head();
+if(document.fonts)document.fonts.ready.then(head);
+function tab(p){$('packView').hidden=!p;$('unpackView').hidden=p;$('tabP').classList.toggle('on',p);$('tabU').classList.toggle('on',!p)}
+$('tabP').onclick=()=>tab(true);$('tabU').onclick=()=>tab(false);
+function wireDrop(zone,input,fn){
+  input.onchange=()=>{fn([...input.files]);input.value=''};
+  ['dragover','dragenter'].forEach(e=>zone.addEventListener(e,ev=>{ev.preventDefault();zone.classList.add('over')}));
+  ['dragleave','drop'].forEach(e=>zone.addEventListener(e,ev=>{ev.preventDefault();zone.classList.remove('over')}));
+  zone.addEventListener('drop',ev=>fn([...ev.dataTransfer.files]));
+}
+function save(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+const toBlob=(c,type,q)=>new Promise(r=>c.toBlob(r,type,q));
+function toPixels(blob){return new Promise((res,rej)=>{
+  const url=URL.createObjectURL(blob),img=new Image();
+  img.onload=()=>{const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
+    const x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0);
+    res({px:x.getImageData(0,0,c.width,c.height).data,w:c.width,h:c.height,url});};
+  img.onerror=()=>rej(new Error('Could not read image'));img.src=url;});}
+
+const near=(a,i,b,j,T)=>Math.abs(a[i]-b[j])<=T&&Math.abs(a[i+1]-b[j+1])<=T&&Math.abs(a[i+2]-b[j+2])<=T;
+function matchCount(a,b,dx,dy,step,T){
+  let n=0;
+  for(let y=0;y<a.h;y+=step){const by=y+dy;if(by<0||by>=b.h)continue;
+    for(let x=0;x<a.w;x+=step){const bx=x+dx;if(bx<0||bx>=b.w)continue;
+      if(near(a.rgba,(y*a.w+x)*4,b.rgba,(by*b.w+bx)*4,T))n++}}
+  return n;
+}
+const stepFor=a=>Math.max(1,Math.floor(Math.sqrt(a.w*a.h/40000)));
+const TS=16;
+
+/* ---------- pack ---------- */
+async function buildAtlas(items,T,q){
+  let bi=0,bestS=-1;
+  items.forEach((c,ci)=>{let s=0;items.forEach((o,oi)=>{if(oi!==ci)s+=matchCount(o,c,0,0,stepFor(o),T)});if(s>bestS){bestS=s;bi=ci}});
+  const base=items[bi],R=6,others=items.map((_,i)=>i).filter(i=>i!==bi);
+  const layers=[],tiles=[],info=[];let totalTiles=0;
+  for(const idx of others){
+    const it=items[idx];let dx=0,dy=0,bs=-1,bd=1e9;const st=stepFor(it);
+    for(let oy=-R;oy<=R;oy++)for(let ox=-R;ox<=R;ox++){
+      const s=matchCount(it,base,ox,oy,st,T),d=Math.abs(ox)+Math.abs(oy);
+      if(s>bs||(s===bs&&d<bd)){bs=s;bd=d;dx=ox;dy=oy}
+    }
+    const tw=Math.ceil(it.w/TS),th=Math.ceil(it.h/TS),keep=new Uint8Array(tw*th);let kept=0;
+    for(let ty=0;ty<th;ty++)for(let tx=0;tx<tw;tx++){
+      let diff=false;
+      for(let y=ty*TS;y<Math.min(it.h,ty*TS+TS)&&!diff;y++){const by=y+dy;
+        for(let x=tx*TS;x<Math.min(it.w,tx*TS+TS);x++){const bx=x+dx;
+          if(bx<0||bx>=base.w||by<0||by>=base.h||!near(it.rgba,(y*it.w+x)*4,base.rgba,(by*base.w+bx)*4,T)){diff=true;break}}}
+      if(diff){keep[ty*tw+tx]=1;kept++;tiles.push({it,tx,ty})}
+    }
+    totalTiles+=tw*th;
+    layers.push({idx,it,dx,dy,keep});
+    info.push({name:it.name,pct:Math.round(kept/(tw*th)*100)});
+  }
+  const W=Math.max(base.w,TS),cols=Math.floor(W/TS),rows=Math.ceil(tiles.length/cols);
+  const ty0=Math.ceil(base.h/TS)*TS,H=ty0+rows*TS;
+  const out=new Uint8ClampedArray(W*H*4);for(let i=0;i<out.length;i+=4){out[i]=out[i+1]=out[i+2]=128;out[i+3]=255}
+  for(let y=0;y<base.h;y++)out.set(base.rgba.subarray(y*base.w*4,(y+1)*base.w*4),y*W*4);
+  tiles.forEach((t,k)=>{
+    const sx=(k%cols)*TS,sy=ty0+Math.floor(k/cols)*TS,it=t.it;
+    for(let y=0;y<TS;y++)for(let x=0;x<TS;x++){
+      const px=Math.min(t.tx*TS+x,it.w-1),py=Math.min(t.ty*TS+y,it.h-1),i=(py*it.w+px)*4,o=((sy+y)*W+sx+x)*4;
+      out[o]=it.rgba[i];out[o+1]=it.rgba[i+1];out[o+2]=it.rgba[i+2];
+    }
+  });
+  const flags=new Uint8Array((totalTiles+7)>>3);let bit=0;
+  const meta={v:3,ts:TS,ty:ty0,c:cols,i:[{n:base.name,w:base.w,h:base.h,o:bi,b:1}]};
+  layers.forEach(l=>{l.keep.forEach(k=>{if(k)flags[bit>>3]|=1<<(bit&7);bit++});meta.i.push({n:l.it.name,w:l.it.w,h:l.it.h,o:l.idx,dx:l.dx,dy:l.dy})});
+  info.unshift({name:base.name,base:true});
+  const c=document.createElement('canvas');c.width=W;c.height=H;
+  c.getContext('2d').putImageData(new ImageData(out,W,H),0,0);
+  const jpg=new Uint8Array(await (await toBlob(c,'image/jpeg',q)).arrayBuffer());
+  const fz=pako.deflate(flags,{level:9});
+  const json=new TextEncoder().encode(JSON.stringify(meta).replace(/[\u007f-\uffff]/g,ch=>'\\u'+('0000'+ch.charCodeAt(0).toString(16)).slice(-4)));
+  const bytes=new Uint8Array(jpg.length+fz.length+json.length+12);
+  bytes.set(jpg,0);bytes.set(fz,jpg.length);bytes.set(json,jpg.length+fz.length);
+  const dv=new DataView(bytes.buffer),n=bytes.length;
+  dv.setUint32(n-12,fz.length);dv.setUint32(n-8,json.length);
+  [0x53,0x50,0x4B,0x42].forEach((v,k)=>bytes[n-4+k]=v);
+  return{bytes,info,canvas:c};
+}
+async function decodeContainer(buf){
+  const n=buf.length;
+  if(n<16||String.fromCharCode(buf[n-4],buf[n-3],buf[n-2],buf[n-1])!=='SPKB')throw 0;
+  const dv=new DataView(buf.buffer,buf.byteOffset,n),fl=dv.getUint32(n-12),jl=dv.getUint32(n-8);
+  const jS=n-12-jl,fS=jS-fl;if(fS<=0)throw 0;
+  const meta=JSON.parse(new TextDecoder().decode(buf.subarray(jS,n-12)));
+  if(meta.v!==3)throw 0;
+  const flags=pako.inflate(buf.subarray(fS,jS));
+  const d=await toPixels(new Blob([buf.subarray(0,fS)],{type:'image/jpeg'}));
+  return{px:d.px,w:d.w,flags,meta};
+}
+function restore(d){
+  const m=d.meta,L=m.i,base=L.find(i=>i.b),bp=new Uint8ClampedArray(base.w*base.h*4);
+  for(let y=0;y<base.h;y++)bp.set(d.px.subarray(y*d.w*4,y*d.w*4+base.w*4),y*base.w*4);
+  const res=[],ts=m.ts;let bit=0,slot=0;
+  for(const it of L){
+    if(it.b){res.push({n:it.n,w:it.w,h:it.h,o:it.o,px:bp});continue}
+    const px=new Uint8ClampedArray(it.w*it.h*4),tw=Math.ceil(it.w/ts),th=Math.ceil(it.h/ts);
+    for(let ty=0;ty<th;ty++)for(let tx=0;tx<tw;tx++){
+      const keep=(d.flags[bit>>3]>>(bit&7))&1;bit++;
+      const x1=Math.min(tx*ts+ts,it.w),y1=Math.min(ty*ts+ts,it.h);
+      let sx=0,sy=0;if(keep){sx=(slot%m.c)*ts;sy=m.ty+Math.floor(slot/m.c)*ts;slot++}
+      for(let y=ty*ts;y<y1;y++)for(let x=tx*ts;x<x1;x++){
+        const i=(y*it.w+x)*4;
+        const j=keep?((sy+y-ty*ts)*d.w+sx+x-tx*ts)*4:((y+it.dy)*base.w+x+it.dx)*4;
+        const src=keep?d.px:bp;
+        px[i]=src[j];px[i+1]=src[j+1];px[i+2]=src[j+2];px[i+3]=255;
+      }
+    }
+    res.push({n:it.n,w:it.w,h:it.h,o:it.o,px});
+  }
+  return res.sort((a,b)=>a.o-b.o);
+}
+
+/* ---------- pack UI ---------- */
+let items=[],atlas=null;
+async function addFiles(files){
+  for(const f of files.filter(f=>f.type.startsWith('image/'))){
+    try{const d=await toPixels(f);
+      items.push({name:f.name.replace(/\.[^.]+$/,''),url:d.url,w:d.w,h:d.h,size:f.size,rgba:d.px});
+    }catch(e){$('msgP').textContent='Could not read '+f.name;$('msgP').className='msg err'}
+  }
+  renderList();
+}
+function renderList(){
+  const l=$('listP');l.innerHTML='';
+  items.forEach((it,i)=>{
+    const d=document.createElement('div');d.className='item';
+    d.innerHTML='<img src="'+it.url+'" alt=""><div>'+esc(it.name)+'<br>'+it.w+'×'+it.h+' · '+kb(it.size)+'</div>';
+    const b=document.createElement('button');b.textContent='Remove';b.onclick=()=>{items.splice(i,1);renderList()};
+    d.appendChild(b);l.appendChild(d);
+  });
+  $('btnPack').disabled=items.length<2;$('btnClear').disabled=!items.length;
+}
+wireDrop($('dropP'),$('fileP'),addFiles);
+$('btnClear').onclick=()=>{items=[];renderList();$('outP').hidden=true;$('msgP').textContent=''};
+$('btnPack').onclick=async()=>{
+  const m=$('msgP');m.className='msg';m.textContent='Packing…';$('btnPack').disabled=true;
+  await new Promise(r=>setTimeout(r,30));
+  try{
+    if(!window.pako)throw new Error('Compression library failed to load. Check your connection.');
+    atlas=await buildAtlas(items,+$('t').value,+$('q').value/100);
+    const back=restore(await decodeContainer(atlas.bytes));
+    let sum=0,cnt=0;
+    back.forEach(b=>{const o=items[b.o].rgba;for(let i=0;i<o.length;i+=4){sum+=Math.abs(o[i]-b.px[i])+Math.abs(o[i+1]-b.px[i+1])+Math.abs(o[i+2]-b.px[i+2]);cnt+=3}});
+    const orig=items.reduce((s,i)=>s+i.size,0),pct=Math.round((1-atlas.bytes.length/orig)*100);
+    $('sizes').textContent=kb(orig)+' → '+kb(atlas.bytes.length)+(pct>0?' ('+pct+'% smaller)':' (not smaller: lower quality or raise tolerance)');
+    $('stats').className='msg ok';
+    $('stats').innerHTML='Average error after unpacking: '+(sum/cnt).toFixed(2)+' / 255 per channel<br><small>'+
+      atlas.info.map(i=>esc(i.name)+': '+(i.base?'base image (stored in full)':i.pct+'% of tiles stored')).join('<br>')+'</small>';
+    const pv=$('prev');pv.width=atlas.canvas.width;pv.height=atlas.canvas.height;pv.getContext('2d').drawImage(atlas.canvas,0,0);
+    pv.style.width=Math.min(pv.width,500)+'px';
+    $('outP').hidden=false;m.textContent='';
+  }catch(e){m.className='msg err';m.textContent=e.message||'Packing failed.'}
+  $('btnPack').disabled=items.length<2;
+};
+$('btnDl').onclick=()=>save(new Blob([atlas.bytes],{type:'image/jpeg'}),'atlas.jpg');
+
+/* ---------- unpack UI ---------- */
+let outs=[];
+const outBlob=c=>$('fmt').value==='png'?toBlob(c,'image/png'):toBlob(c,'image/jpeg',0.95);
+const ext=()=>$('fmt').value==='png'?'.png':'.jpg';
+async function unpack(files){
+  const f=files[0];if(!f)return;
+  const m=$('msgU');m.className='msg';m.textContent='Unpacking…';$('listU').innerHTML='';$('btnAll').hidden=true;outs=[];
+  await new Promise(r=>setTimeout(r,30));
+  try{
+    const res=restore(await decodeContainer(new Uint8Array(await f.arrayBuffer())));
+    res.forEach(r=>{
+      const c=document.createElement('canvas');c.width=r.w;c.height=r.h;
+      c.getContext('2d').putImageData(new ImageData(r.px,r.w,r.h),0,0);
+      outs.push({c,n:r.n});
+      const el=document.createElement('div');el.className='item';el.appendChild(c);
+      const t=document.createElement('div');t.innerHTML=esc(r.n)+'<br>'+r.w+'×'+r.h;el.appendChild(t);
+      const b=document.createElement('button');b.textContent='Download';b.onclick=async()=>save(await outBlob(c),r.n+ext());el.appendChild(b);
+      $('listU').appendChild(el);
+    });
+    m.className='msg ok';m.textContent='Recovered '+res.length+' images.';$('btnAll').hidden=false;
+  }catch(e){m.className='msg err';m.textContent='No atlas data found. Use the original atlas.jpg downloaded from this app, made with the latest version.'}
+}
+wireDrop($('dropU'),$('fileU'),unpack);
+$('btnAll').onclick=async()=>{for(const o of outs){save(await outBlob(o.c),o.n+ext());await new Promise(r=>setTimeout(r,350))}};
+})();
+  </script>
+</body>
+
+</html>
