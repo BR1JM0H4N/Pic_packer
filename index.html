@@ -459,6 +459,195 @@
       background: var(--secondaryContainer);
       color: var(--onSecondaryContainer)
     }
+
+    /* ---------- M3 progress popover ---------- */
+    #prog {
+      position: fixed;
+      inset: 0;
+      margin: auto;
+      width: min(360px, calc(100vw - 48px));
+      height: fit-content;
+      padding: 24px;
+      border: 0;
+      border-radius: 28px;
+      background: var(--surfaceContainerHigh);
+      color: var(--onSurface);
+      box-shadow: 0 8px 32px #0008;
+      overflow: visible;
+      opacity: 0;
+      transform: scale(.92) translateY(12px);
+      transition: opacity .25s cubic-bezier(.2, 0, 0, 1), transform .3s cubic-bezier(.2, 0, 0, 1), display .3s allow-discrete, overlay .3s allow-discrete;
+    }
+    
+    #prog:popover-open {
+      opacity: 1;
+      transform: none
+    }
+    
+    @starting-style {
+      #prog:popover-open {
+        opacity: 0;
+        transform: scale(.92) translateY(12px)
+      }
+    }
+    
+    #prog::backdrop {
+      background: #0009;
+      opacity: 0;
+      transition: opacity .25s, display .3s allow-discrete, overlay .3s allow-discrete
+    }
+    
+    #prog:popover-open::backdrop {
+      opacity: 1
+    }
+    
+    @starting-style {
+      #prog:popover-open::backdrop {
+        opacity: 0
+      }
+    }
+    
+    .pg-ic {
+      display: grid;
+      place-items: center;
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 16px;
+      border-radius: 20px;
+      background: var(--primaryContainer);
+      color: var(--onPrimaryContainer);
+      position: relative
+    }
+    
+    .pg-ic svg {
+      width: 28px;
+      height: 28px;
+      fill: currentColor;
+      position: absolute;
+      transition: opacity .25s, transform .35s cubic-bezier(.2, 0, 0, 1)
+    }
+    
+    .pg-ic .ok {
+      opacity: 0;
+      transform: scale(.4) rotate(-45deg)
+    }
+    
+    #prog.done .pg-ic {
+      background: var(--primary);
+      color: var(--onPrimary)
+    }
+    
+    #prog.done .pg-ic .work {
+      opacity: 0;
+      transform: scale(.4)
+    }
+    
+    #prog.done .pg-ic .ok {
+      opacity: 1;
+      transform: none
+    }
+    
+    #prog:not(.done) .pg-ic .work {
+      animation: pgspin 2.4s linear infinite
+    }
+    
+    @keyframes pgspin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+    
+    #pgT {
+      margin: 0 0 4px;
+      font-size: 1.5rem;
+      line-height: 2rem;
+      font-weight: 600;
+      text-align: center
+    }
+    
+    #pgS {
+      margin: 0 0 20px;
+      font-size: .9rem;
+      color: var(--onSurfaceVariant);
+      text-align: center;
+      min-height: 1.3em
+    }
+    
+    .pg-track {
+      position: relative;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--surfaceVariant);
+      overflow: hidden
+    }
+    
+    .pg-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      border-radius: 4px;
+      background: var(--primary);
+      transform-origin: 0 50%;
+      transform: scaleX(var(--pg, 0));
+      transition: transform .2s cubic-bezier(.2, 0, 0, 1)
+    }
+    
+    .pg-bar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, #ffffff55, transparent);
+      transform: translateX(-100%);
+      animation: pgshine 1.4s ease-in-out infinite
+    }
+    
+    #prog.done .pg-bar::after {
+      animation: none;
+      opacity: 0
+    }
+    
+    @keyframes pgshine {
+      to {
+        transform: translateX(100%)
+      }
+    }
+    
+    .pg-dot {
+      position: absolute;
+      right: 2px;
+      top: 50%;
+      width: 4px;
+      height: 4px;
+      margin-top: -2px;
+      border-radius: 2px;
+      background: var(--primary)
+    }
+    
+    .pg-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-size: .8rem;
+      color: var(--onSurfaceVariant);
+      font-variant-numeric: tabular-nums
+    }
+    
+    #pgP {
+      color: var(--primary);
+      font-weight: 700
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+      #prog,
+      .pg-bar,
+      .pg-bar::after,
+      .pg-ic svg {
+        animation: none !important;
+        transition: none !important
+      }
+    }
   </style>
 </head>
 
@@ -502,7 +691,7 @@
       <div class="card res" id="outP" hidden>
         <div class="big" id="sizes"></div>
         <div class="msg" id="stats"></div>
-        <div class="row"><button class="pri" id="btnDl">Download atlas.jpg</button></div>
+        <div class="row"><button class="pri" id="btnDl">Download atlas</button></div>
         <canvas id="prev"></canvas>
         <p><small>Top: the base image. Below it: only the tiles that changed. The layout data is appended inside the
             file, so do not re-save, resize, or send it through apps that recompress images.</small></p>
@@ -540,6 +729,19 @@
         </svg></span>Unpack</button>
   </nav>
   
+  <div id="prog" popover="manual" role="dialog" aria-live="polite" aria-labelledby="pgT">
+    <div class="pg-ic">
+      <svg class="work" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6a6 6 0 0 1 5.2 9l1.5 1.5A8 8 0 0 0 12 4zm0 14a6 6 0 0 1-5.2-9L5.3 7.5A8 8 0 0 0 12 20v3l4-4-4-4z" /></svg>
+      <svg class="ok" viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" /></svg>
+    </div>
+    <h2 id="pgT">Packing</h2>
+    <p id="pgS"></p>
+    <div class="pg-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="pgBar">
+      <div class="pg-bar" id="pgF"></div><div class="pg-dot"></div>
+    </div>
+    <div class="pg-meta"><span id="pgN"></span><span id="pgP">0%</span></div>
+  </div>
+  
   <script>
     (function(){
 const $=id=>document.getElementById(id);
@@ -548,6 +750,20 @@ const kb=n=>n>=1048576?(n/1048576).toFixed(2)+' MB':(n/1024).toFixed(0)+' KB';
 function fill(r){const p=(r.value-r.min)/(r.max-r.min)*100;r.style.setProperty('--p',p+'%')}
 ['q','t'].forEach(id=>{const r=$(id);fill(r);r.oninput=()=>{$(id==='q'?'qv':'tv').textContent=r.value;fill(r)}});
 const hd=$('hd'),lg=$('lg'),ttl=$('ttl'),hbg=$('hbg');
+
+/* ---------- M3 progress popover ---------- */
+const P={el:$('prog'),last:0,
+  open(title,sub){const e=this.el;e.classList.remove('done');$('pgT').textContent=title;this.set(0,sub||'');
+    try{e.showPopover?e.showPopover():e.setAttribute('open','')}catch(_){}},
+  set(p,sub,note){p=Math.max(0,Math.min(1,p));$('pgF').parentNode.style.setProperty('--pg',p);$('pgF').style.setProperty('--pg',p);
+    $('pgP').textContent=Math.round(p*100)+'%';$('pgBar').setAttribute('aria-valuenow',Math.round(p*100));
+    if(sub!=null)$('pgS').textContent=sub;if(note!=null)$('pgN').textContent=note},
+  async step(p,sub,note){this.set(p,sub,note);const n=performance.now();
+    if(n-this.last>40){await new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));this.last=performance.now()}},
+  async finish(title,sub){this.el.classList.add('done');$('pgT').textContent=title;this.set(1,sub,'');
+    await new Promise(r=>setTimeout(r,850));this.close()},
+  close(){const e=this.el;try{e.hidePopover?e.hidePopover():e.removeAttribute('open')}catch(_){}}
+};
 const lerp=(a,b,p)=>a+(b-a)*p;
 let tick=0;
 function head(){tick=0;
@@ -592,16 +808,23 @@ const TS=16;
 
 /* ---------- pack ---------- */
 async function buildAtlas(items,T,q){
+  const nI=items.length,units=nI*nI+(nI-1)*(169+1)+3;let done=0;
+  const adv=(sub,note)=>{done++;return P.step(Math.min(.97,done/units)*.9,sub,note)};
   let bi=0,bestS=-1;
-  items.forEach((c,ci)=>{let s=0;items.forEach((o,oi)=>{if(oi!==ci)s+=matchCount(o,c,0,0,stepFor(o),T)});if(s>bestS){bestS=s;bi=ci}});
+  for(let ci=0;ci<nI;ci++){const c=items[ci];let s=0;
+    for(let oi=0;oi<nI;oi++){if(oi!==ci)s+=matchCount(items[oi],c,0,0,stepFor(items[oi]),T);await adv('Choosing the base image','Comparing '+(ci+1)+' of '+nI)}
+    if(s>bestS){bestS=s;bi=ci}}
   const base=items[bi],R=6,others=items.map((_,i)=>i).filter(i=>i!==bi);
   const layers=[],tiles=[],info=[];let totalTiles=0;
+  let oN=0;
   for(const idx of others){
-    const it=items[idx];let dx=0,dy=0,bs=-1,bd=1e9;const st=stepFor(it);
+    const it=items[idx];let dx=0,dy=0,bs=-1,bd=1e9;const st=stepFor(it);oN++;
     for(let oy=-R;oy<=R;oy++)for(let ox=-R;ox<=R;ox++){
       const s=matchCount(it,base,ox,oy,st,T),d=Math.abs(ox)+Math.abs(oy);
       if(s>bs||(s===bs&&d<bd)){bs=s;bd=d;dx=ox;dy=oy}
+      await adv('Aligning outfits','Outfit '+oN+' of '+others.length);
     }
+    await adv('Finding changed tiles','Outfit '+oN+' of '+others.length);
     const tw=Math.ceil(it.w/TS),th=Math.ceil(it.h/TS),keep=new Uint8Array(tw*th);let kept=0;
     for(let ty=0;ty<th;ty++)for(let tx=0;tx<tw;tx++){
       let diff=false;
@@ -614,6 +837,7 @@ async function buildAtlas(items,T,q){
     layers.push({idx,it,dx,dy,keep});
     info.push({name:it.name,pct:Math.round(kept/(tw*th)*100)});
   }
+  await P.step(.92,'Building the atlas','');
   const W=Math.max(base.w,TS),cols=Math.floor(W/TS),rows=Math.ceil(tiles.length/cols);
   const ty0=Math.ceil(base.h/TS)*TS,H=ty0+rows*TS;
   const out=new Uint8ClampedArray(W*H*4);for(let i=0;i<out.length;i+=4){out[i]=out[i+1]=out[i+2]=128;out[i+3]=255}
@@ -631,6 +855,7 @@ async function buildAtlas(items,T,q){
   info.unshift({name:base.name,base:true});
   const c=document.createElement('canvas');c.width=W;c.height=H;
   c.getContext('2d').putImageData(new ImageData(out,W,H),0,0);
+  await P.step(.95,'Encoding JPEG','');
   const jpg=new Uint8Array(await (await toBlob(c,'image/jpeg',q)).arrayBuffer());
   const fz=pako.deflate(flags,{level:9});
   const json=new TextEncoder().encode(JSON.stringify(meta).replace(/[\u007f-\uffff]/g,ch=>'\\u'+('0000'+ch.charCodeAt(0).toString(16)).slice(-4)));
@@ -639,7 +864,7 @@ async function buildAtlas(items,T,q){
   const dv=new DataView(bytes.buffer),n=bytes.length;
   dv.setUint32(n-12,fz.length);dv.setUint32(n-8,json.length);
   [0x53,0x50,0x4B,0x42].forEach((v,k)=>bytes[n-4+k]=v);
-  return{bytes,info,canvas:c};
+  return{bytes,info,canvas:c,baseName:base.name};
 }
 async function decodeContainer(buf){
   const n=buf.length;
@@ -698,11 +923,13 @@ function renderList(){
 wireDrop($('dropP'),$('fileP'),addFiles);
 $('btnClear').onclick=()=>{items=[];renderList();$('outP').hidden=true;$('msgP').textContent=''};
 $('btnPack').onclick=async()=>{
-  const m=$('msgP');m.className='msg';m.textContent='Packing…';$('btnPack').disabled=true;
+  const m=$('msgP');m.className='msg';m.textContent='';$('btnPack').disabled=true;
+  P.open('Packing','Getting started');
   await new Promise(r=>setTimeout(r,30));
   try{
     if(!window.pako)throw new Error('Compression library failed to load. Check your connection.');
     atlas=await buildAtlas(items,+$('t').value,+$('q').value/100);
+    await P.step(.97,'Verifying result','Unpacking to check accuracy');
     const back=restore(await decodeContainer(atlas.bytes));
     let sum=0,cnt=0;
     back.forEach(b=>{const o=items[b.o].rgba;for(let i=0;i<o.length;i+=4){sum+=Math.abs(o[i]-b.px[i])+Math.abs(o[i+1]-b.px[i+1])+Math.abs(o[i+2]-b.px[i+2]);cnt+=3}});
@@ -713,11 +940,15 @@ $('btnPack').onclick=async()=>{
       atlas.info.map(i=>esc(i.name)+': '+(i.base?'base image (stored in full)':i.pct+'% of tiles stored')).join('<br>')+'</small>';
     const pv=$('prev');pv.width=atlas.canvas.width;pv.height=atlas.canvas.height;pv.getContext('2d').drawImage(atlas.canvas,0,0);
     pv.style.width=Math.min(pv.width,500)+'px';
+    $('btnDl').textContent='Download '+atlasName();
     $('outP').hidden=false;m.textContent='';
-  }catch(e){m.className='msg err';m.textContent=e.message||'Packing failed.'}
+    await P.finish('Done',atlasName());
+  }catch(e){P.close();m.className='msg err';m.textContent=e.message||'Packing failed.'}
   $('btnPack').disabled=items.length<2;
 };
-$('btnDl').onclick=()=>save(new Blob([atlas.bytes],{type:'image/jpeg'}),'atlas.jpg');
+const safeName=s=>(s||'image').replace(/[\\\/:*?"<>|\u0000-\u001f]/g,'_').trim()||'image';
+const atlasName=()=>'atlas_'+safeName(atlas.baseName)+'.jpg';
+$('btnDl').onclick=()=>save(new Blob([atlas.bytes],{type:'image/jpeg'}),atlasName());
 
 /* ---------- unpack UI ---------- */
 let outs=[];
@@ -725,11 +956,17 @@ const outBlob=c=>$('fmt').value==='png'?toBlob(c,'image/png'):toBlob(c,'image/jp
 const ext=()=>$('fmt').value==='png'?'.png':'.jpg';
 async function unpack(files){
   const f=files[0];if(!f)return;
-  const m=$('msgU');m.className='msg';m.textContent='Unpacking…';$('listU').innerHTML='';$('btnAll').hidden=true;outs=[];
+  const m=$('msgU');m.className='msg';m.textContent='';$('listU').innerHTML='';$('btnAll').hidden=true;outs=[];
+  P.open('Unpacking','Reading atlas');
   await new Promise(r=>setTimeout(r,30));
   try{
-    const res=restore(await decodeContainer(new Uint8Array(await f.arrayBuffer())));
-    res.forEach(r=>{
+    await P.step(.15,'Reading atlas','');
+    const dec=await decodeContainer(new Uint8Array(await f.arrayBuffer()));
+    await P.step(.5,'Restoring images','');
+    const res=restore(dec);
+    let k=0;
+    for(const r of res){
+      await P.step(.6+.38*(k++/res.length),'Rendering previews',k+' of '+res.length);
       const c=document.createElement('canvas');c.width=r.w;c.height=r.h;
       c.getContext('2d').putImageData(new ImageData(r.px,r.w,r.h),0,0);
       outs.push({c,n:r.n});
@@ -737,9 +974,10 @@ async function unpack(files){
       const t=document.createElement('div');t.innerHTML=esc(r.n)+'<br>'+r.w+'×'+r.h;el.appendChild(t);
       const b=document.createElement('button');b.textContent='Download';b.onclick=async()=>save(await outBlob(c),r.n+ext());el.appendChild(b);
       $('listU').appendChild(el);
-    });
+    }
     m.className='msg ok';m.textContent='Recovered '+res.length+' images.';$('btnAll').hidden=false;
-  }catch(e){m.className='msg err';m.textContent='No atlas data found. Use the original atlas.jpg downloaded from this app, made with the latest version.'}
+    await P.finish('Done','Recovered '+res.length+' images');
+  }catch(e){P.close();m.className='msg err';m.textContent='No atlas data found. Use the original atlas.jpg downloaded from this app, made with the latest version.'}
 }
 wireDrop($('dropU'),$('fileU'),unpack);
 $('btnAll').onclick=async()=>{for(const o of outs){save(await outBlob(o.c),o.n+ext());await new Promise(r=>setTimeout(r,350))}};
