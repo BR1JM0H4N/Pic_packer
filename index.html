@@ -980,7 +980,22 @@ async function unpack(files){
   }catch(e){P.close();m.className='msg err';m.textContent='No atlas data found. Use the original atlas.jpg downloaded from this app, made with the latest version.'}
 }
 wireDrop($('dropU'),$('fileU'),unpack);
-$('btnAll').onclick=async()=>{for(const o of outs){save(await outBlob(o.c),o.n+ext());await new Promise(r=>setTimeout(r,350))}};
+$('btnAll').onclick=async()=>{
+  const n=outs.length;if(!n)return;
+  $('btnAll').disabled=true;
+  P.open('Saving images','0 of '+n);
+  try{
+    for(let i=0;i<n;i++){
+      const o=outs[i];
+      await P.step(i/n,'Saving '+o.n+ext(),(i+1)+' of '+n);
+      save(await outBlob(o.c),o.n+ext());
+      await new Promise(r=>setTimeout(r,350));
+      P.set((i+1)/n,null,(i+1)+' of '+n+' saved');
+    }
+    await P.finish('Done','Saved '+n+' images');
+  }catch(e){P.close()}
+  finally{$('btnAll').disabled=false}
+};
 })();
   </script>
 </body>
